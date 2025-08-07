@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紧急修复工具</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+        }
+        .alert {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button:hover { background: #c82333; }
+        button.success { background: #28a745; }
+        button.success:hover { background: #218838; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .step {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 紧急修复工具</h1>
+    
+    <div class="alert">
+        <strong>⚠️ 警告：</strong> 这个工具用于解决登录失败的紧急情况。它会强制重置所有相关设置。
+    </div>
+
+    <button onclick="emergencyFix()" class="success">🔧 执行紧急修复</button>
+    <button onclick="checkStatus()">📊 检查当前状态</button>
+    <button onclick="testDirectLogin()">🧪 测试直接登录</button>
+
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `step`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            output.appendChild(div);
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+
+        function emergencyFix() {
+            clearOutput();
+            log('🚨 开始紧急修复...', 'warning');
+            
+            try {
+                // 1. 清除维护模式
+                localStorage.removeItem('maintenance_status');
+                log('✅ 清除维护模式设置');
+
+                // 2. 清除当前会话
+                localStorage.removeItem('user_token');
+                localStorage.removeItem('user_data');
+                log('✅ 清除当前会话');
+
+                // 3. 重置管理员账号
+                let users = JSON.parse(localStorage.getItem('all_users') || '[]');
+                let adminIndex = users.findIndex(u => u.role === 'admin');
+                
+                const correctAdmin = {
+                    id: 1,
+                    username: 'admin',
+                    email: 'admin@example.com',
+                    password: 'admin123', // 确保明文密码存在
+                    role: 'admin',
+                    registerTime: new Date().toLocaleString('zh-CN'),
+                    balance: 10000,
+                    level: 'SVIP',
+                    twoFactorEnabled: false,
+                    emailVerified: true,
+                    loginAttempts: 0
+                };
+
+                if (adminIndex >= 0) {
+                    users[adminIndex] = correctAdmin;
+                    log('✅ 重置现有管理员账号');
+                } else {
+                    users.push(correctAdmin);
+                    log('✅ 创建新管理员账号');
+                }
+
+                localStorage.setItem('all_users', JSON.stringify(users));
+
+                // 4. 清除所有错误记录
+                localStorage.removeItem('audit_logs');
+                log('✅ 清除审计日志');
+
+                // 5. 创建最小化测试数据
+                const testCards = [{
+                    id: 1,
+                    cardNumber: 'TEST123456',
+                    cardType: '月卡',
+                    value: '¥29.90',
+                    status: 'unused',
+                    createTime: new Date().toLocaleString('zh-CN'),
+                    useTime: null
+                }];
+                localStorage.setItem('all_cards', JSON.stringify(testCards));
+                log('✅ 创建测试卡密');
+
+                // 6. 设置初始化标记
+                localStorage.setItem('emergency_fixed', 'true');
+                localStorage.setItem('emergency_fix_time', new Date().toISOString());
+
+                log('🎉 紧急修复完成！', 'success');
+                log('📝 管理员账号: admin', 'success');
+                log('📝 管理员密码: admin123', 'success');
+                log('⚠️ 请刷新主应用页面并重新登录', 'warning');
+
+            } catch (error) {
+                log(`❌ 修复失败: ${error.message}`, 'error');
+            }
+        }
+
+        function checkStatus() {
+            clearOutput();
+            log('📊 检查系统状态...');
+            
+            try {
+                // 检查维护模式
+                const maintenanceStatus = localStorage.getItem('maintenance_status');
+                if (maintenanceStatus) {
+                    const status = JSON.parse(maintenanceStatus);
+                    log(`⚠️ 维护模式状态: ${status.isActive ? '启用' : '禁用'}`, status.isActive ? 'warning' : 'success');
+                } else {
+                    log('✅ 维护模式: 未设置（正常）');
+                }
+
+                // 检查用户数据
+                const users = JSON.parse(localStorage.getItem('all_users') || '[]');
+                log(`👥 用户总数: ${users.length}`);
+                
+                const admin = users.find(u => u.role === 'admin');
+                if (admin) {
+                    log(`✅ 管理员账号存在: ${admin.username}`);
+                    log(`📝 管理员明文密码: ${admin.password || '未设置'}`);
+                    log(`🔐 管理员哈希密码: ${admin.passwordHash ? '存在' : '不存在'}`);
+                    log(`🔑 管理员盐值: ${admin.passwordSalt ? '存在' : '不存在'}`);
+                } else {
+                    log('❌ 管理员账号不存在');
+                }
+
+                // 检查会话
+                const token = localStorage.getItem('user_token');
+                const userData = localStorage.getItem('user_data');
+                log(`🔐 当前令牌: ${token ? '存在' : '不存在'}`);
+                log(`👤 当前用户数据: ${userData ? '存在' : '不存在'}`);
+
+                // 检查紧急修复记录
+                const emergencyFixed = localStorage.getItem('emergency_fixed');
+                const fixTime = localStorage.getItem('emergency_fix_time');
+                if (emergencyFixed) {
+                    log(`🔧 上次紧急修复时间: ${new Date(fixTime).toLocaleString()}`);
+                }
+
+                log('📊 状态检查完成');
+
+            } catch (error) {
+                log(`❌ 检查失败: ${error.message}`, 'error');
+            }
+        }
+
+        function testDirectLogin() {
+            clearOutput();
+            log('🧪 测试直接登录逻辑...');
+            
+            try {
+                const credentials = { username: 'admin', password: 'admin123' };
+                
+                // 步骤1: 检查用户存在
+                const users = JSON.parse(localStorage.getItem('all_users') || '[]');
+                const foundUser = users.find(u => u.username === credentials.username);
+                
+                if (!foundUser) {
+                    log('❌ 用户不存在');
+                    return;
+                }
+                log('✅ 用户存在');
+
+                // 步骤2: 检查维护模式
+                const maintenanceStatus = localStorage.getItem('maintenance_status');
+                let isMaintenanceActive = false;
+                if (maintenanceStatus) {
+                    const status = JSON.parse(maintenanceStatus);
+                    isMaintenanceActive = status.isActive;
+                    log(`⚠️ 维护模式: ${isMaintenanceActive ? '启用' : '禁用'}`);
+                } else {
+                    log('✅ 维护模式: 未启用');
+                }
+
+                // 步骤3: 密码验证
+                let isPasswordValid = false;
+                if (foundUser.password) {
+                    isPasswordValid = foundUser.password === credentials.password;
+                    log(`🔐 明文密码验证: ${isPasswordValid ? '通过' : '失败'}`);
+                    log(`   存储密码: "${foundUser.password}"`);
+                    log(`   输入密码: "${credentials.password}"`);
+                } else {
+                    log('❌ 用户没有明文密码');
+                }
+
+                // 步骤4: 角色检查
+                if (foundUser.role === 'admin') {
+                    log('✅ 管理员权限确认');
+                } else {
+                    log(`⚠️ 用户角色: ${foundUser.role}`);
+                }
+
+                // 结论
+                if (isPasswordValid && foundUser.role === 'admin') {
+                    log('🎉 登录应该成功！', 'success');
+                } else {
+                    log('❌ 登录会失败', 'error');
+                    if (!isPasswordValid) log('  原因: 密码验证失败');
+                    if (foundUser.role !== 'admin') log('  原因: 非管理员角色');
+                }
+
+            } catch (error) {
+                log(`❌ 测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载时自动检查状态
+        window.onload = function() {
+            setTimeout(checkStatus, 500);
+        };
+    </script>
+</body>
+</html>

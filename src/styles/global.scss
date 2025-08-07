@@ -1,0 +1,538 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  background-color: #f5f5f5;
+  line-height: 1.6;
+}
+
+// 响应式容器
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  
+  @media (max-width: 768px) {
+    padding: 0 15px;
+  }
+}
+
+.page-container {
+  min-height: 100vh;
+  padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 6px;
+  }
+}
+
+// 通用样式类
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+
+.mt-12 {
+  margin-top: 12px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+// 响应式隐藏类
+.hidden-xs {
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+}
+
+.hidden-sm {
+  @media (min-width: 768px) and (max-width: 991px) {
+    display: none !important;
+  }
+}
+
+.hidden-md {
+  @media (min-width: 992px) and (max-width: 1199px) {
+    display: none !important;
+  }
+}
+
+.hidden-lg {
+  @media (min-width: 1200px) {
+    display: none !important;
+  }
+}
+
+// 移动端专用样式
+.mobile-only {
+  display: none;
+  
+  @media (max-width: 767px) {
+    display: block;
+  }
+}
+
+.desktop-only {
+  display: block;
+  
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+// 自定义滚动条
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+  
+  &:hover {
+    background: #a8a8a8;
+  }
+}
+
+// Element Plus 组件响应式优化
+.el-table {
+  @media (max-width: 768px) {
+    font-size: 12px;
+    
+    .el-table__cell {
+      padding: 8px 5px;
+    }
+  }
+}
+
+.el-card {
+  @media (max-width: 768px) {
+    .el-card__header {
+      padding: 16px;
+    }
+    
+    .el-card__body {
+      padding: 16px;
+    }
+  }
+}
+
+.el-dialog {
+  @media (max-width: 768px) {
+    width: 95% !important;
+    margin-top: 5vh !important;
+  }
+}
+
+.el-pagination {
+  @media (max-width: 768px) {
+    text-align: center;
+    
+    .el-pagination__sizes,
+    .el-pagination__jump {
+      display: none;
+    }
+  }
+}
+
+// 表单响应式
+.responsive-form {
+  .el-form-item {
+    @media (max-width: 768px) {
+      .el-form-item__label {
+        width: 80px !important;
+        font-size: 14px;
+      }
+      
+      .el-form-item__content {
+        margin-left: 80px !important;
+      }
+    }
+  }
+}
+
+// 按钮组响应式
+.el-button-group {
+  @media (max-width: 768px) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    
+    .el-button {
+      flex: 1;
+      min-width: auto;
+    }
+  }
+}
+
+// 统计卡片响应式
+.stats-card {
+  @media (max-width: 768px) {
+    margin-bottom: 12px;
+    
+    .stats-item {
+      .stats-icon {
+        font-size: 24px !important;
+        margin-right: 12px !important;
+      }
+      
+      .stats-content {
+        h3 {
+          font-size: 18px !important;
+        }
+        
+        p {
+          font-size: 12px !important;
+        }
+      }
+    }
+  }
+}
+
+// 头部响应式
+.header-content {
+  @media (max-width: 768px) {
+    h1, h2 {
+      font-size: 18px !important;
+    }
+    
+    .nav-buttons,
+    .header-actions {
+      .el-button {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+// 表格操作列响应式
+.table-actions {
+  @media (max-width: 768px) {
+    .el-button {
+      padding: 4px 8px;
+      font-size: 12px;
+      margin: 2px;
+    }
+  }
+}
+
+// 移动端适配的工具类
+@media (max-width: 767px) {
+  .mobile-stack {
+    .el-col {
+      width: 100% !important;
+      margin-bottom: 16px;
+    }
+  }
+  
+  .mobile-hide {
+    display: none !important;
+  }
+  
+  .mobile-center {
+    text-align: center !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+}
+
+// 动画效果
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// 加载动画
+.loading-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// 悬浮效果
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// 主题色变量
+:root {
+  --primary-color: #409eff;
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --danger-color: #f56c6c;
+  --info-color: #909399;
+  
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --text-placeholder: #c0c4cc;
+  
+  --border-light: #e4e7ed;
+  --border-lighter: #ebeef5;
+  --border-extra-light: #f2f6fc;
+  
+  --background-color: #f5f5f5;
+  --card-background: #ffffff;
+  
+  // 基础字体大小（可通过设置调整）
+  --base-font-size: 14px;
+}
+
+// 深色主题
+[data-theme="dark"] {
+  --primary-color: #409eff;
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --danger-color: #f56c6c;
+  --info-color: #909399;
+  
+  --text-primary: #e4e7ed;
+  --text-regular: #cfd3dc;
+  --text-secondary: #a3a6ad;
+  --text-placeholder: #6c6e72;
+  
+  --border-light: #4c4d4f;
+  --border-lighter: #414243;
+  --border-extra-light: #363637;
+  
+  --background-color: #1a1a1a;
+  --card-background: #2d2d2d;
+  
+  // 更新body背景色
+  body {
+    background-color: var(--background-color);
+    color: var(--text-primary);
+  }
+  
+  // Element Plus组件深色主题适配
+  .el-card {
+    background-color: var(--card-background);
+    border-color: var(--border-light);
+    
+    .el-card__header {
+      background-color: var(--card-background);
+      border-bottom-color: var(--border-light);
+    }
+  }
+  
+  .el-menu {
+    background-color: var(--card-background);
+    border-color: var(--border-light);
+    
+    .el-menu-item {
+      color: var(--text-regular);
+      
+      &:hover {
+        background-color: rgba(64, 158, 255, 0.1);
+        color: var(--primary-color);
+      }
+      
+      &.is-active {
+        background-color: var(--primary-color);
+        color: #ffffff;
+      }
+    }
+  }
+  
+  .el-form-item__label {
+    color: var(--text-regular);
+  }
+  
+  .el-input {
+    .el-input__inner {
+      background-color: var(--card-background);
+      border-color: var(--border-light);
+      color: var(--text-primary);
+      
+      &::placeholder {
+        color: var(--text-placeholder);
+      }
+    }
+  }
+  
+  .el-select {
+    .el-input__inner {
+      background-color: var(--card-background);
+      border-color: var(--border-light);
+      color: var(--text-primary);
+    }
+  }
+  
+  .el-button {
+    &.el-button--default {
+      background-color: var(--card-background);
+      border-color: var(--border-light);
+      color: var(--text-regular);
+      
+      &:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+      }
+    }
+  }
+  
+  .el-divider {
+    border-color: var(--border-light);
+  }
+  
+  .el-statistic {
+    .el-statistic__content {
+      color: var(--text-primary);
+    }
+    
+    .el-statistic__head {
+      color: var(--text-secondary);
+    }
+  }
+  
+  .el-tag {
+    background-color: var(--card-background);
+    border-color: var(--border-light);
+    color: var(--text-regular);
+  }
+}
+
+// 紧凑模式
+.compact-mode {
+  .el-card {
+    .el-card__body {
+      padding: 16px;
+    }
+    
+    .el-card__header {
+      padding: 12px 16px;
+    }
+  }
+  
+  .el-form-item {
+    margin-bottom: 16px;
+  }
+  
+  .el-table {
+    .el-table__cell {
+      padding: 8px 10px;
+    }
+  }
+  
+  .el-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  
+  .settings-page {
+    .el-main {
+      padding: 15px;
+    }
+  }
+  
+  .setting-section {
+    .section-header {
+      margin-bottom: 20px;
+      
+      h3 {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
+// 无动画模式
+.no-animations {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .el-button,
+  .el-card,
+  .el-menu-item,
+  .el-input,
+  .el-select {
+    transition: none !important;
+  }
+}
+
+// 字体大小应用
+html {
+  font-size: var(--base-font-size);
+}
+
+body {
+  font-size: var(--base-font-size);
+  background-color: var(--background-color);
+  color: var(--text-primary);
+}

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录失败诊断工具</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .diagnostic-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .success { color: #67C23A; font-weight: bold; }
+        .error { color: #F56C6C; font-weight: bold; }
+        .warning { color: #E6A23C; font-weight: bold; }
+        .info { color: #409EFF; font-weight: bold; }
+        button {
+            background: #409EFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+        }
+        button:hover { background: #337ecc; }
+        button.danger { background: #F56C6C; }
+        button.danger:hover { background: #e54545; }
+        pre {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .step {
+            border-left: 4px solid #409EFF;
+            padding-left: 12px;
+            margin: 10px 0;
+        }
+        .step.error {
+            border-left-color: #F56C6C;
+        }
+        .step.success {
+            border-left-color: #67C23A;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 登录失败诊断工具</h1>
+    
+    <div class="diagnostic-card">
+        <h2>🚀 快速修复</h2>
+        <button onclick="quickFix()">一键修复所有问题</button>
+        <button onclick="resetEverything()" class="danger">完全重置系统</button>
+        <div id="quickFixResult"></div>
+    </div>
+
+    <div class="diagnostic-card">
+        <h2>📊 完整诊断</h2>
+        <button onclick="runFullDiagnostic()">运行完整诊断</button>
+        <div id="diagnosticResult"></div>
+    </div>
+
+    <div class="diagnostic-card">
+        <h2>🧪 模拟登录测试</h2>
+        <button onclick="simulateLogin()">模拟完整登录流程</button>
+        <div id="simulationResult"></div>
+    </div>
+
+    <div class="diagnostic-card">
+        <h2>📋 原始数据查看</h2>
+        <button onclick="viewRawData()">查看所有原始数据</button>
+        <div id="rawDataResult"></div>
+    </div>
+
+    <script>
+        function log(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `step ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            container.appendChild(div);
+        }
+
+        function clearContainer(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        function quickFix() {
+            clearContainer('quickFixResult');
+            log('quickFixResult', '🔧 开始快速修复...', 'info');
+            
+            try {
+                // 1. 确保有管理员账号
+                let users = JSON.parse(localStorage.getItem('all_users') || '[]');
+                let admin = users.find(u => u.role === 'admin');
+                
+                if (!admin) {
+                    log('quickFixResult', '创建管理员账号...', 'info');
+                    admin = {
+                        id: 1,
+                        username: 'admin',
+                        email: 'admin@example.com',
+                        password: 'admin123',
+                        role: 'admin',
+                        registerTime: new Date().toLocaleString('zh-CN'),
+                        balance: 10000,
+                        level: 'SVIP',
+                        twoFactorEnabled: false,
+                        emailVerified: true,
+                        loginAttempts: 0
+                    };
+                    users.push(admin);
+                    localStorage.setItem('all_users', JSON.stringify(users));
+                    log('quickFixResult', '✅ 管理员账号已创建', 'success');
+                } else {
+                    log('quickFixResult', '✅ 管理员账号已存在', 'success');
+                }
+
+                // 2. 确保密码正确
+                if (admin.password !== 'admin123') {
+                    admin.password = 'admin123';
+                    localStorage.setItem('all_users', JSON.stringify(users));
+                    log('quickFixResult', '✅ 管理员密码已重置为 admin123', 'success');
+                }
+
+                // 3. 清除登录限制
+                admin.loginAttempts = 0;
+                localStorage.setItem('all_users', JSON.stringify(users));
+                log('quickFixResult', '✅ 登录限制已清除', 'success');
+
+                // 4. 清除审计日志中的错误记录
+                let auditLogs = JSON.parse(localStorage.getItem('audit_logs') || '[]');
+                const originalCount = auditLogs.length;
+                auditLogs = auditLogs.filter(log => !(log.username === 'admin' && log.action === 'login_failed'));
+                localStorage.setItem('audit_logs', JSON.stringify(auditLogs));
+                log('quickFixResult', `✅ 清除了 ${originalCount - auditLogs.length} 条失败日志`, 'success');
+
+                // 5. 清除当前用户会话
+                localStorage.removeItem('user_token');
+                localStorage.removeItem('user_data');
+                log('quickFixResult', '✅ 清除了现有会话', 'success');
+
+                log('quickFixResult', '🎉 快速修复完成！现在尝试登录:', 'success');
+                log('quickFixResult', '用户名: admin', 'success');
+                log('quickFixResult', '密码: admin123', 'success');
+
+            } catch (error) {
+                log('quickFixResult', `❌ 修复失败: ${error.message}`, 'error');
+            }
+        }
+
+        function runFullDiagnostic() {
+            clearContainer('diagnosticResult');
+            log('diagnosticResult', '🔍 开始完整诊断...', 'info');
+            
+            try {
+                // 检查1: localStorage 是否可用
+                if (typeof(Storage) !== "undefined") {
+                    log('diagnosticResult', '✅ localStorage 可用', 'success');
+                } else {
+                    log('diagnosticResult', '❌ localStorage 不可用', 'error');
+                    return;
+                }
+
+                // 检查2: 用户数据
+                const users = JSON.parse(localStorage.getItem('all_users') || '[]');
+                log('diagnosticResult', `📊 找到 ${users.length} 个用户`, 'info');
+                
+                const admin = users.find(u => u.role === 'admin');
+                if (admin) {
+                    log('diagnosticResult', `✅ 管理员账号存在: ${admin.username}`, 'success');
+                    log('diagnosticResult', `  - ID: ${admin.id}`, 'info');
+                    log('diagnosticResult', `  - 邮箱: ${admin.email}`, 'info');
+                    log('diagnosticResult', `  - 明文密码: ${admin.password ? '有 (' + admin.password + ')' : '无'}`, admin.password ? 'success' : 'error');
+                    log('diagnosticResult', `  - 哈希密码: ${admin.passwordHash ? '有' : '无'}`, 'info');
+                    log('diagnosticResult', `  - 盐值: ${admin.passwordSalt ? '有' : '无'}`, 'info');
+                    log('diagnosticResult', `  - 登录尝试次数: ${admin.loginAttempts || 0}`, 'info');
+                } else {
+                    log('diagnosticResult', '❌ 未找到管理员账号', 'error');
+                }
+
+                // 检查3: 审计日志
+                const auditLogs = JSON.parse(localStorage.getItem('audit_logs') || '[]');
+                log('diagnosticResult', `📋 审计日志条数: ${auditLogs.length}`, 'info');
+                
+                const adminLogs = auditLogs.filter(log => log.username === 'admin');
+                if (adminLogs.length > 0) {
+                    log('diagnosticResult', `📋 管理员相关日志: ${adminLogs.length} 条`, 'info');
+                    const recentLogs = adminLogs.slice(-3);
+                    recentLogs.forEach(logEntry => {
+                        const type = logEntry.action.includes('success') ? 'success' : 'error';
+                        log('diagnosticResult', `  - ${logEntry.action}: ${JSON.stringify(logEntry.details)}`, type);
+                    });
+                }
+
+                // 检查4: 当前会话
+                const currentToken = localStorage.getItem('user_token');
+                const currentUser = localStorage.getItem('user_data');
+                log('diagnosticResult', `🔐 当前令牌: ${currentToken ? '有' : '无'}`, 'info');
+                log('diagnosticResult', `👤 当前用户: ${currentUser ? '有' : '无'}`, 'info');
+
+                // 检查5: 其他相关数据
+                const allCards = JSON.parse(localStorage.getItem('all_cards') || '[]');
+                const balanceHistory = JSON.parse(localStorage.getItem('balance_history') || '[]');
+                log('diagnosticResult', `🎫 卡密数量: ${allCards.length}`, 'info');
+                log('diagnosticResult', `💰 余额历史: ${balanceHistory.length} 条`, 'info');
+
+                log('diagnosticResult', '🏁 诊断完成', 'success');
+
+            } catch (error) {
+                log('diagnosticResult', `❌ 诊断失败: ${error.message}`, 'error');
+                log('diagnosticResult', `错误堆栈: ${error.stack}`, 'error');
+            }
+        }
+
+        function simulateLogin() {
+            clearContainer('simulationResult');
+            log('simulationResult', '🧪 开始模拟登录流程...', 'info');
+            
+            try {
+                const credentials = {
+                    username: 'admin',
+                    password: 'admin123'
+                };
+
+                log('simulationResult', `1️⃣ 输入凭据: ${credentials.username} / ${credentials.password}`, 'info');
+
+                // 步骤1: 用户名验证
+                const isAdminLogin = credentials.username.toLowerCase() === 'admin';
+                log('simulationResult', `2️⃣ 是否为管理员登录: ${isAdminLogin}`, isAdminLogin ? 'success' : 'info');
+
+                if (!isAdminLogin) {
+                    // 模拟用户名验证逻辑
+                    const errors = [];
+                    if (!credentials.username || credentials.username.length < 3) {
+                        errors.push('用户名至少需要3个字符');
+                    }
+                    if (credentials.username.length > 20) {
+                        errors.push('用户名不能超过20个字符');
+                    }
+                    if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(credentials.username)) {
+                        errors.push('用户名只能包含字母、数字、下划线和中文');
+                    }
+                    const forbiddenWords = ['root', 'system', 'test', '管理员'];
+                    if (forbiddenWords.some(word => credentials.username.toLowerCase().includes(word))) {
+                        errors.push('用户名包含禁用词汇');
+                    }
+
+                    if (errors.length > 0) {
+                        log('simulationResult', `❌ 用户名验证失败: ${errors.join(', ')}`, 'error');
+                        return;
+                    }
+                }
+                log('simulationResult', '✅ 用户名验证通过', 'success');
+
+                // 步骤2: 查找用户
+                const users = JSON.parse(localStorage.getItem('all_users') || '[]');
+                const foundUser = users.find(u => u.username === credentials.username);
+                
+                if (!foundUser) {
+                    log('simulationResult', '❌ 用户不存在', 'error');
+                    return;
+                }
+                log('simulationResult', '✅ 用户找到', 'success');
+
+                // 步骤3: 密码验证
+                let isPasswordValid = false;
+                
+                // 首先尝试明文密码验证
+                if (foundUser.password) {
+                    isPasswordValid = foundUser.password === credentials.password;
+                    log('simulationResult', `3️⃣ 明文密码验证: ${isPasswordValid ? '通过' : '失败'}`, isPasswordValid ? 'success' : 'error');
+                    log('simulationResult', `   用户密码: "${foundUser.password}"`, 'info');
+                    log('simulationResult', `   输入密码: "${credentials.password}"`, 'info');
+                }
+
+                // 如果明文密码验证失败，尝试哈希验证
+                if (!isPasswordValid && foundUser.passwordHash && foundUser.passwordSalt) {
+                    log('simulationResult', '尝试哈希密码验证...', 'info');
+                    // 这里我们无法真正验证哈希，因为需要crypto-js库
+                    log('simulationResult', '⚠️ 哈希验证需要在实际应用中进行', 'warning');
+                }
+
+                if (!isPasswordValid) {
+                    log('simulationResult', '❌ 密码验证失败', 'error');
+                    return;
+                }
+
+                log('simulationResult', '✅ 密码验证通过', 'success');
+                log('simulationResult', '🎉 模拟登录成功！', 'success');
+                log('simulationResult', '➡️ 请在实际应用中测试登录', 'info');
+
+            } catch (error) {
+                log('simulationResult', `❌ 模拟失败: ${error.message}`, 'error');
+            }
+        }
+
+        function viewRawData() {
+            clearContainer('rawDataResult');
+            log('rawDataResult', '📋 查看原始数据...', 'info');
+            
+            try {
+                const data = {
+                    all_users: JSON.parse(localStorage.getItem('all_users') || '[]'),
+                    user_token: localStorage.getItem('user_token'),
+                    user_data: JSON.parse(localStorage.getItem('user_data') || '{}'),
+                    audit_logs: JSON.parse(localStorage.getItem('audit_logs') || '[]').slice(-10),
+                    all_cards: JSON.parse(localStorage.getItem('all_cards') || '[]').length,
+                    balance_history: JSON.parse(localStorage.getItem('balance_history') || '[]').length
+                };
+
+                const container = document.getElementById('rawDataResult');
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(data, null, 2);
+                container.appendChild(pre);
+
+            } catch (error) {
+                log('rawDataResult', `❌ 查看数据失败: ${error.message}`, 'error');
+            }
+        }
+
+        function resetEverything() {
+            if (!confirm('⚠️ 这将删除所有数据并重新初始化系统！\n\n确定要继续吗？')) {
+                return;
+            }
+
+            clearContainer('quickFixResult');
+            log('quickFixResult', '🔄 开始完全重置...', 'warning');
+
+            try {
+                // 清空所有数据
+                localStorage.clear();
+                log('quickFixResult', '✅ 所有本地数据已清除', 'success');
+
+                // 重新创建管理员账号
+                const admin = {
+                    id: 1,
+                    username: 'admin',
+                    email: 'admin@example.com', 
+                    password: 'admin123',
+                    role: 'admin',
+                    registerTime: new Date().toLocaleString('zh-CN'),
+                    balance: 10000,
+                    level: 'SVIP',
+                    twoFactorEnabled: false,
+                    emailVerified: true,
+                    loginAttempts: 0
+                };
+
+                localStorage.setItem('all_users', JSON.stringify([admin]));
+                log('quickFixResult', '✅ 管理员账号已重新创建', 'success');
+
+                // 创建一些测试卡密
+                const testCards = [];
+                for (let i = 1; i <= 5; i++) {
+                    testCards.push({
+                        id: i,
+                        cardNumber: `TEST${Date.now()}${i.toString().padStart(3, '0')}`,
+                        cardType: '月卡',
+                        value: '¥29.90',
+                        status: 'unused',
+                        createTime: new Date().toLocaleString('zh-CN'),
+                        useTime: null,
+                        expireTime: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleString('zh-CN')
+                    });
+                }
+                localStorage.setItem('all_cards', JSON.stringify(testCards));
+                log('quickFixResult', '✅ 测试卡密已创建', 'success');
+
+                log('quickFixResult', '🎉 系统重置完成！', 'success');
+                log('quickFixResult', '现在可以使用 admin/admin123 登录', 'success');
+                log('quickFixResult', '⚠️ 请刷新主应用页面', 'warning');
+
+            } catch (error) {
+                log('quickFixResult', `❌ 重置失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载时自动运行诊断
+        window.onload = function() {
+            setTimeout(() => {
+                runFullDiagnostic();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

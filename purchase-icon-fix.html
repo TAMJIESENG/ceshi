@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购买页面图标显示修复</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .fix-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .info {
+            border-left-color: #17a2b8;
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .before, .after {
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .before {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .after {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .step-number {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            text-align: center;
+            line-height: 28px;
+            margin-right: 12px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 3px 6px;
+            border-radius: 4px;
+            color: #856404;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛒 购买页面专区图标显示修复</h1>
+    
+    <div class="fix-section success">
+        <h3>✅ 问题已修复！</h3>
+        <p><strong>问题：</strong>购买卡密页面的专区图标只显示emoji，不显示自定义上传的图片。</p>
+        <p><strong>解决：</strong>修改模板逻辑，支持同时显示emoji图标和自定义图片，与管理页面保持一致。</p>
+    </div>
+
+    <div class="fix-section info">
+        <h3>🔍 问题分析</h3>
+        
+        <h4>根本原因</h4>
+        <p>购买页面(`CardPurchase.vue`)的专区图标显示逻辑过于简单，只支持emoji图标：</p>
+        <div class="code">
+// 原问题代码（第94行）
+&lt;div class="icon-wrapper"&gt;{{ zone.icon }}&lt;/div&gt;
+
+// 这种方式只能显示emoji图标，无法显示自定义图片
+        </div>
+        
+        <h4>数据流分析</h4>
+        <ol>
+            <li>管理员在后台上传自定义图标 → 保存到 <code>zone.customIcon</code> 字段</li>
+            <li>购买页面从 <code>localStorage</code> 加载专区数据 → 数据是完整的</li>
+            <li>但是模板只使用 <code>zone.icon</code> 显示 → 忽略了 <code>zone.customIcon</code></li>
+        </ol>
+    </div>
+
+    <div class="fix-section">
+        <h3>🔧 修复详情</h3>
+        
+        <div class="comparison">
+            <div class="before">
+                <h4>❌ 修复前</h4>
+                <div class="code">
+&lt;div class="category-icon"&gt;
+  &lt;div class="icon-wrapper"&gt;
+    {{ zone.icon }}
+  &lt;/div&gt;
+&lt;/div&gt;
+
+/* 只支持emoji显示 */
+                </div>
+            </div>
+            
+            <div class="after">
+                <h4>✅ 修复后</h4>
+                <div class="code">
+&lt;div class="category-icon"&gt;
+  &lt;div class="icon-wrapper"&gt;
+    &lt;!-- 智能图标显示 --&gt;
+    &lt;span v-if="!zone.customIcon || zone.customIcon.trim() === ''"&gt;
+      {{ zone.icon || '🎯' }}
+    &lt;/span&gt;
+    &lt;img v-else 
+         :src="zone.customIcon" 
+         :alt="zone.name" 
+         class="custom-zone-icon" 
+         @error="handleIconError(zone)" /&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+/* 支持emoji和自定义图片 */
+                </div>
+            </div>
+        </div>
+
+        <h4>修复步骤详解</h4>
+        
+        <div class="step">
+            <span class="step-number">1</span>
+            <strong>修改模板显示逻辑</strong>
+            <p>使用条件渲染，优先显示自定义图标，fallback到emoji图标：</p>
+            <div class="code">
+&lt;!-- 显示自定义图标或emoji图标 --&gt;
+&lt;span v-if="!zone.customIcon || zone.customIcon.trim() === ''"&gt;{{ zone.icon || '🎯' }}&lt;/span&gt;
+&lt;img v-else :src="zone.customIcon" :alt="zone.name" class="custom-zone-icon" @error="handleIconError(zone)" /&gt;
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <strong>添加自定义图标样式</strong>
+            <div class="code">
+.icon-wrapper {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  
+  // 自定义图标样式
+  .custom-zone-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      // 保持比例，填充容器
+    border-radius: 16px;    // 与容器圆角一致
+  }
+}
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">3</span>
+            <strong>添加错误处理机制</strong>
+            <div class="code">
+// 图片加载错误处理
+const handleIconError = (zone) => {
+  console.warn(`专区 ${zone.name} 的自定义图标加载失败，恢复为emoji图标`)
+  zone.customIcon = ''  // 清空失效的图标
+  if (!zone.icon) {
+    zone.icon = '🎯'     // 设置默认emoji
+  }
+}
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">4</span>
+            <strong>增强数据加载调试</strong>
+            <div class="code">
+const loadData = () => {
+  // ...加载逻辑...
+  
+  console.log('🛱 购买页面加载专区数据:', zones.value.length, '个活跃专区')
+  
+  // 检查每个专区的图标数据
+  zones.value.forEach((zone, index) => {
+    console.log(`专区 ${index + 1}:`, {
+      id: zone.id,
+      name: zone.name,
+      icon: zone.icon || '无',
+      hasCustomIcon: !!zone.customIcon,
+      customIconLength: zone.customIcon ? zone.customIcon.length : 0
+    })
+  })
+}
+            </div>
+        </div>
+    </div>
+
+    <div class="fix-section warning">
+        <h3>📋 测试方法</h3>
+        <ol>
+            <li>确保在管理后台已经上传了自定义图标的专区</li>
+            <li>打开浏览器控制台(F12) → Console选项卡</li>
+            <li>访问购买卡密页面</li>
+            <li>查看控制台日志，确认专区数据加载正确：</li>
+            <div class="code">
+🛱 购买页面加载专区数据: 2 个活跃专区
+专区 1: {id: 1, name: "游戏专区", icon: "🎮", hasCustomIcon: false, customIconLength: 0}
+专区 2: {id: 2, name: "软件专区", icon: "", hasCustomIcon: true, customIconLength: 12345}
+            </div>
+            <li>检查页面上的专区图标是否正确显示：
+                <ul>
+                    <li><span class="highlight">有自定义图标的专区</span> → 显示上传的图片</li>
+                    <li><span class="highlight">只有emoji的专区</span> → 显示emoji图标</li>
+                    <li><span class="highlight">图标加载失败</span> → 自动回退到emoji或默认图标</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="fix-section success">
+        <h3>🎉 预期效果</h3>
+        <ul>
+            <li>✅ 有自定义图标的专区显示上传的图片</li>
+            <li>✅ 只有emoji的专区正常显示emoji</li>
+            <li>✅ 图标加载失败时自动降级处理</li>
+            <li>✅ 图标样式与设计保持一致</li>
+            <li>✅ 控制台输出详细的加载日志</li>
+            <li>✅ 与管理页面的显示逻辑保持一致</li>
+        </ul>
+    </div>
+
+    <div class="fix-section info">
+        <h3>🔧 技术细节</h3>
+        
+        <h4>条件渲染逻辑</h4>
+        <div class="code">
+// 判断是否有有效的自定义图标
+v-if="!zone.customIcon || zone.customIcon.trim() === ''"
+
+// 条件分解：
+// 1. !zone.customIcon          → customIcon字段不存在或为null/undefined
+// 2. zone.customIcon.trim() === '' → customIcon存在但为空字符串或只有空格
+        </div>
+
+        <h4>图片样式适配</h4>
+        <div class="code">
+.custom-zone-icon {
+  width: 100%;           // 填满容器宽度
+  height: 100%;          // 填满容器高度  
+  object-fit: cover;     // 保持宽高比，裁剪适应容器
+  border-radius: 16px;   // 圆角与容器一致
+}
+        </div>
+
+        <h4>错误处理机制</h4>
+        <div class="code">
+@error="handleIconError(zone)"
+
+// 当图片加载失败时：
+// 1. 清空失效的customIcon
+// 2. 确保有fallback的emoji图标
+// 3. 输出警告日志便于调试
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🛒 购买页面图标显示修复测试页面已加载');
+            
+            // 页面动画
+            const sections = document.querySelectorAll('.fix-section');
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'all 0.6s ease';
+                
+                setTimeout(() => {
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            console.log('📋 修复总结:');
+            console.log('1. ✅ 修改购买页面的图标显示模板');
+            console.log('2. ✅ 添加自定义图标的CSS样式');
+            console.log('3. ✅ 增加图标加载失败的错误处理');
+            console.log('4. ✅ 增强数据加载的调试日志');
+            console.log('');
+            console.log('🎯 现在购买页面应该能正确显示所有类型的专区图标了！');
+        });
+    </script>
+</body>
+</html>

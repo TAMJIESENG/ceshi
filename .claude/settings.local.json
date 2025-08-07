@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(pkill:*)",
+      "Bash(timeout 5 npm run dev)",
+      "Bash(node:*)",
+      "Bash(npm run build:*)",
+      "Bash(start avatar-test.html)",
+      "Bash(del avatar-test.html)",
+      "Bash(rm:*)",
+      "Bash(taskkill:*)",
+      "Bash(TASKKILL /F /PID 4892)",
+      "Bash(powershell:*)",
+      "Bash(TASKKILL:*)",
+      "Bash(start http://localhost:5173)",
+      "Bash(start D:网页设计卡密系统debug.html)",
+      "Bash(start debug.html)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}
